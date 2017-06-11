@@ -538,6 +538,12 @@ namespace Shadowsocks.View
                 var bitmap = new BinaryBitmap(new HybridBinarizer(source));
                 QRCodeReader reader = new QRCodeReader();
                 var result = reader.decode(bitmap);
+                if (result == null)
+                {
+                    ShowBalloonTip(I18N.GetString("Error"),
+                            I18N.GetString("Update subscribe SSR QRCode node failure"), ToolTipIcon.Info, 10000);
+                    return;
+                }
                 Configuration config = controller.GetCurrentConfiguration();
                 var success = controller.AddServerBySSURL(result.Text,config.nodeFeedQRCodeGroup,false,true);
                 if (success)
