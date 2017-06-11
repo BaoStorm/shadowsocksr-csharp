@@ -367,7 +367,7 @@ namespace Shadowsocks.View
             if (!String.IsNullOrEmpty(updateFreeNodeChecker.FreeNodeResult))
             {
                 List<string> urls = new List<string>();
-                updateFreeNodeChecker.FreeNodeResult.TrimEnd('\r', '\n', ' ');
+                updateFreeNodeChecker.FreeNodeResult = updateFreeNodeChecker.FreeNodeResult.TrimEnd('\r', '\n', ' ');
                 Configuration config = controller.GetCurrentConfiguration();
                 Server selected_server = null;
                 if (config.index >= 0 && config.index < config.configs.Count)
@@ -446,6 +446,8 @@ namespace Shadowsocks.View
                                     {
                                         if (selected_server.isMatchServer(server))
                                         {
+                                            if (selected_server.isMatchServer(Configuration.GetDefaultServer()))
+                                                continue;
                                             match = true;
                                             urls.RemoveAt(j);
                                             break;
