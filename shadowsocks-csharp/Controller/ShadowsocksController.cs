@@ -206,13 +206,22 @@ namespace Shadowsocks.Controller
             _config.FlushPortMapCache();
         }
 
-        public bool AddServerBySSURL(string ssURL, string force_group = null, bool toLast = false)
+        public bool AddServerBySSURL(string ssURL, string force_group = null, bool toLast = false,bool isEdit=false)
         {
             if (ssURL.StartsWith("ss://", StringComparison.OrdinalIgnoreCase) || ssURL.StartsWith("ssr://", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
                     var server = new Server(ssURL, force_group);
+                    if (isEdit)
+                    {
+                        int index = _config.configs.FindIndex(p => p.server == server.server && (p.server_port == server.server_port || p.server_udp_port == server.server_udp_port));
+                        if (index >= 0)
+                        {
+                            server.id = _config.configs[index].id;
+                            _config.configs.RemoveAt(index);
+                        }
+                    }
                     if (toLast)
                     {
                         _config.configs.Add(server);
@@ -238,6 +247,7 @@ namespace Shadowsocks.Controller
                 return false;
             }
         }
+        
 
         public void ToggleMode(ProxyMode mode)
         {

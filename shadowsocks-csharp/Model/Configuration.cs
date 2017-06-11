@@ -110,6 +110,10 @@ namespace Shadowsocks.Model
         public string nodeFeedGroup;
         public bool nodeFeedAutoUpdate;
 
+        public List<string> nodeFeedQRCodeURLs;
+        public string nodeFeedQRCodeGroup;
+        public bool nodeFeedQRCodeAutoUpdate;
+
         public Dictionary<string, string> token = new Dictionary<string, string>();
         public Dictionary<string, PortMapConfig> portMap = new Dictionary<string, PortMapConfig>();
 
@@ -123,6 +127,9 @@ namespace Shadowsocks.Model
         private static string DEFAULT_FEED_URL = "https://raw.githubusercontent.com/breakwa11/breakwa11.github.io/master/free/freenodeplain.txt";
         private static string OLD_DEFAULT_FEED_URL = "https://raw.githubusercontent.com/breakwa11/breakwa11.github.io/master/free/freenode.txt";
 
+
+        private static List<string> DEFAULT_FEED_QRCODE_URLS = new List<string>();
+        private static string DEFAULT_QRCODE_GROUP = "QRCode-SSR";
         public static void SetPassword(string password)
         {
             GlobalConfiguration.config_password = password;
@@ -386,6 +393,10 @@ namespace Shadowsocks.Model
             nodeFeedGroup = "";
             nodeFeedAutoUpdate = true;
 
+            nodeFeedQRCodeURLs = DEFAULT_FEED_QRCODE_URLS;
+            nodeFeedQRCodeGroup = "";
+            nodeFeedQRCodeAutoUpdate = true;
+
             configs = new List<Server>()
             {
                 GetDefaultServer()
@@ -423,6 +434,9 @@ namespace Shadowsocks.Model
             nodeFeedURL = config.nodeFeedURL;
             nodeFeedGroup = config.nodeFeedGroup;
             nodeFeedAutoUpdate = config.nodeFeedAutoUpdate;
+            nodeFeedQRCodeURLs = config.nodeFeedQRCodeURLs;
+            nodeFeedQRCodeGroup = config.nodeFeedQRCodeGroup;
+            nodeFeedQRCodeAutoUpdate = config.nodeFeedQRCodeAutoUpdate;
         }
 
         public void FixConfiguration()
@@ -458,7 +472,10 @@ namespace Shadowsocks.Model
             {
                 nodeFeedURL = DEFAULT_FEED_URL;
             }
-
+            if (string.IsNullOrEmpty(nodeFeedQRCodeGroup))
+            {
+                nodeFeedQRCodeGroup = DEFAULT_QRCODE_GROUP;
+            }
             Dictionary<string, int> id = new Dictionary<string, int>();
             if (index < 0 || index >= configs.Count) index = 0;
             foreach (Server server in configs)

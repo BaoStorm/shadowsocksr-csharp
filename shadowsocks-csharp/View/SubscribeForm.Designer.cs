@@ -53,7 +53,7 @@
             this.tableLayoutPanel1.Controls.Add(this.textBoxGroup, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.checkBoxAutoUpdate, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 1, 2);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(13, 13);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 12);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 3;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());

@@ -145,6 +145,7 @@
     <Compile Include="Controller\SpeedTest.cs" />
     <Compile Include="Controller\UpdateChecker.cs" />
     <Compile Include="Controller\UpdateFreeNode.cs" />
+    <Compile Include="Controller\UpdateQRCodeNode.cs" />
     <Compile Include="Encryption\EncryptorBase.cs" />
     <Compile Include="Encryption\EncryptorFactory.cs" />
     <Compile Include="Encryption\IVEncryptor.cs" />
@@ -243,6 +244,12 @@
     <Compile Include="View\SubscribeForm.designer.cs">
       <DependentUpon>SubscribeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="View\SubscribeQRCodeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\SubscribeQRCodeForm.Designer.cs">
+      <DependentUpon>SubscribeQRCodeForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="View\ConfigForm.resx">
       <DependentUpon>ConfigForm.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -275,6 +282,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="View\SubscribeForm.resx">
       <DependentUpon>SubscribeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\SubscribeQRCodeForm.resx">
+      <DependentUpon>SubscribeQRCodeForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="app.manifest">

@@ -27,6 +27,7 @@ namespace Shadowsocks.View
         private ShadowsocksController controller;
         private UpdateChecker updateChecker;
         private UpdateFreeNode updateFreeNodeChecker;
+        private UpdateQRCodeNode updateQRCodeNodeChecker;
 
         private NotifyIcon _notifyIcon;
         private ContextMenu contextMenu1;
@@ -52,9 +53,11 @@ namespace Shadowsocks.View
         private ServerLogForm serverLogForm;
         private PortSettingsForm portMapForm;
         private SubscribeForm subScribeForm;
+        private SubscribeQRCodeForm subScribeQRCodeForm;
         private LogForm logForm;
         private string _urlToOpen;
         private System.Timers.Timer timerDelayCheckUpdate;
+        private System.Timers.Timer timerDelayCheckQRCodeUpdate;
 
         public MenuViewController(ShadowsocksController controller)
         {
@@ -85,6 +88,9 @@ namespace Shadowsocks.View
             updateFreeNodeChecker = new UpdateFreeNode();
             updateFreeNodeChecker.NewFreeNodeFound += updateFreeNodeChecker_NewFreeNodeFound;
 
+            updateQRCodeNodeChecker = new UpdateQRCodeNode();
+            updateQRCodeNodeChecker.NewQRCodeNodeFound += updateQRCodeNodeChecker_NewQrCodeNodeFound;
+
             LoadCurrentConfiguration();
 
             Configuration cfg = controller.GetCurrentConfiguration();
@@ -92,10 +98,38 @@ namespace Shadowsocks.View
             {
                 updateFreeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), !cfg.isDefaultConfig());
             }
+            if (cfg.isDefaultConfig() || cfg.nodeFeedQRCodeAutoUpdate)
+            {
+                timerDelayCheckQRCodeUpdate = new System.Timers.Timer(1000.0 * 10);
+                timerDelayCheckQRCodeUpdate.Elapsed += TimerDelayCheckQRCodeUpdate_Elapsed;
+                timerDelayCheckQRCodeUpdate.Start();
+                //updateQRCodeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), !cfg.isDefaultConfig());
+            }
 
             timerDelayCheckUpdate = new System.Timers.Timer(1000.0 * 10);
             timerDelayCheckUpdate.Elapsed += timer_Elapsed;
             timerDelayCheckUpdate.Start();
+
+        }
+
+        private void TimerDelayCheckQRCodeUpdate_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (timerDelayCheckQRCodeUpdate != null)
+            {
+                DateTime tommowDateTime = DateTime.Now.Date.AddDays(1);
+
+                TimeSpan timespan = tommowDateTime.Subtract(DateTime.Now);
+                if (timespan.Hours < 6)
+                {
+                    timerDelayCheckQRCodeUpdate.Interval = 1000.0 * timespan.TotalSeconds;
+                }
+                else
+                {
+                    timerDelayCheckUpdate.Interval = 1000.0 * 60 * 6;
+                }
+            }
+            Configuration cfg = controller.GetCurrentConfiguration();
+            updateQRCodeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), !cfg.isDefaultConfig());
         }
 
         private void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -112,6 +146,7 @@ namespace Shadowsocks.View
                 }
             }
             updateChecker.CheckUpdate(controller.GetCurrentConfiguration());
+
         }
 
         void controller_Errored(object sender, System.IO.ErrorEventArgs e)
@@ -243,6 +278,10 @@ namespace Shadowsocks.View
                     CreateMenuItem("Subscribe setting...", new EventHandler(this.SubscribeSetting_Click)),
                     CreateMenuItem("Update subscribe SSR node", new EventHandler(this.CheckNodeUpdate_Click)),
                     CreateMenuItem("Update subscribe SSR node(bypass proxy)", new EventHandler(this.CheckNodeUpdateBypassProxy_Click)),
+                    new MenuItem("-"),
+                    CreateMenuItem("Subscribe QRCode setting...", new EventHandler(this.SubscribeQRCodeSetting_Click)),
+                    CreateMenuItem("Update subscribe SSR QRCode node", new EventHandler(this.CheckQRCodeNodeUpdate_Click)),
+                    CreateMenuItem("Update subscribe SSR QRCode node(bypass proxy)", new EventHandler(this.CheckQRCodeNodeUpdateBypassProxy_Click)),
                     new MenuItem("-"),
                     sameHostForSameTargetItem = CreateMenuItem("Same host for same address", new EventHandler(this.SelectSameHostForSameTargetItem_Click)),
                     new MenuItem("-"),
@@ -480,6 +519,40 @@ namespace Shadowsocks.View
             }
             ShowBalloonTip(I18N.GetString("Error"),
                 I18N.GetString("Update subscribe SSR node failure"), ToolTipIcon.Info, 10000);
+        }
+
+        void updateQRCodeNodeChecker_NewQrCodeNodeFound(byte[] sender, EventArgs e)
+        {
+            byte[] imageBytes = sender;
+            if (imageBytes != null)
+            {
+                //读入MemoryStream对象  
+                MemoryStream memoryStream = new MemoryStream(imageBytes, 0, imageBytes.Length);
+                memoryStream.Write(imageBytes, 0, imageBytes.Length);
+                //转成图片  
+                Image image = Image.FromStream(memoryStream);
+                Bitmap target = new Bitmap(image);
+                var source = new BitmapLuminanceSource(target);
+                var bitmap = new BinaryBitmap(new HybridBinarizer(source));
+                QRCodeReader reader = new QRCodeReader();
+                var result = reader.decode(bitmap);
+                Configuration config = controller.GetCurrentConfiguration();
+                var success = controller.AddServerBySSURL(result.Text,config.nodeFeedQRCodeGroup,false,true);
+                if (success)
+                {
+                    ShowBalloonTip(I18N.GetString("Success"),
+                            I18N.GetString("Update subscribe SSR QRCode node success"), ToolTipIcon.Info, 10000);
+                }
+                else {
+                    ShowBalloonTip(I18N.GetString("Error"),
+                            I18N.GetString("Update subscribe SSR QRCode node failure"), ToolTipIcon.Info, 10000);
+                }
+            }
+            else {
+                Logging.Log(LogLevel.Error, "connect to update server error");
+                ShowBalloonTip(I18N.GetString("Error"),
+                            I18N.GetString("Update subscribe SSR QRCode node failure"), ToolTipIcon.Info, 10000);
+            }
         }
 
         void updateChecker_NewVersionFound(object sender, EventArgs e)
@@ -742,6 +815,27 @@ namespace Shadowsocks.View
             }
         }
 
+        private void ShowSubscribeQRCodeSettingForm()
+        {
+            if (subScribeQRCodeForm != null)
+            {
+                subScribeQRCodeForm.Activate();
+                subScribeQRCodeForm.Update();
+                if (subScribeQRCodeForm.WindowState == FormWindowState.Minimized)
+                {
+                    subScribeQRCodeForm.WindowState = FormWindowState.Normal;
+                }
+            }
+            else
+            {
+                subScribeQRCodeForm = new SubscribeQRCodeForm(controller);
+                subScribeQRCodeForm.Show();
+                subScribeQRCodeForm.Activate();
+                subScribeQRCodeForm.BringToFront();
+                subScribeQRCodeForm.FormClosed += subScribeQRCodeForm_FormClosed;
+            }
+        }
+
         void configForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             configForm = null;
@@ -775,6 +869,11 @@ namespace Shadowsocks.View
         void subScribeForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             subScribeForm = null;
+        }
+
+        void subScribeQRCodeForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            subScribeQRCodeForm = null;
         }
 
         private void Config_Click(object sender, EventArgs e)
@@ -1020,6 +1119,15 @@ namespace Shadowsocks.View
             updateFreeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), false);
         }
 
+        private void CheckQRCodeNodeUpdate_Click(object sender, EventArgs e)
+        {
+            updateQRCodeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), true);
+        }
+        private void CheckQRCodeNodeUpdateBypassProxy_Click(object sender, EventArgs e)
+        {
+            updateQRCodeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), false);
+        }
+
         private void ShowLogItem_Click(object sender, EventArgs e)
         {
             ShowGlobalLogForm();
@@ -1038,6 +1146,11 @@ namespace Shadowsocks.View
         private void SubscribeSetting_Click(object sender, EventArgs e)
         {
             ShowSubscribeSettingForm();
+        }
+
+        private void SubscribeQRCodeSetting_Click(object sender, EventArgs e)
+        {
+            ShowSubscribeQRCodeSettingForm();
         }
 
         private void DisconnectCurrent_Click(object sender, EventArgs e)

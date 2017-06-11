@@ -20,6 +20,9 @@ Import servers from file...=从文件导入服务器...
 Subscribe setting...=SSR服务器订阅设置...
 Update subscribe SSR node=更新SSR服务器订阅
 Update subscribe SSR node(bypass proxy)=更新SSR服务器订阅（不通过代理）
+Subscribe QRCode setting...=二维码SSR服务器订阅设置...
+Update subscribe SSR QRCode node=更新二维码SSR服务器订阅
+Update subscribe SSR QRCode node(bypass proxy)=更新二维码SSR服务器订阅（不通过代理）
 Global settings...=选项设置...
 Start on Boot=开机启动
 Allow Clients from LAN=允许来自局域网的连接
@@ -228,5 +231,14 @@ Running: Port {0}=正在运行：端口 {0}
 Password NOT match=密码不匹配
 Update subscribe SSR node success=SSR服务器订阅更新成功
 Update subscribe SSR node failure=SSR服务器订阅更新失败
+Update subscribe SSR QRCode node success=二维码SSR服务器订阅更新成功
+Update subscribe SSR QRCode node failure=二维码SSR服务器订阅更新失败
 Success=成功
-Error=錯誤
+Error=错误
+
+# Subscribe QRCode Form
+
+Url List=二维码网址列表
+Input=输入
+Group Name=分组名称
+Auto Update=自动更新
