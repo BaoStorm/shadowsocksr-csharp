@@ -103,7 +103,7 @@ namespace Shadowsocks.View
                 timerDelayCheckQRCodeUpdate = new System.Timers.Timer(1000.0 * 10);
                 timerDelayCheckQRCodeUpdate.Elapsed += TimerDelayCheckQRCodeUpdate_Elapsed;
                 timerDelayCheckQRCodeUpdate.Start();
-                //updateQRCodeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), !cfg.isDefaultConfig());
+                //updateQRCodeNodeChecker.CheckUpdate(controller, !cfg.isDefaultConfig());
             }
 
             timerDelayCheckUpdate = new System.Timers.Timer(1000.0 * 10);
@@ -125,11 +125,11 @@ namespace Shadowsocks.View
                 }
                 else
                 {
-                    timerDelayCheckUpdate.Interval = 1000.0 * 60 * 6;
+                    timerDelayCheckQRCodeUpdate.Interval = 1000.0 * 60 * 60 * 6;
                 }
             }
             Configuration cfg = controller.GetCurrentConfiguration();
-            updateQRCodeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), !cfg.isDefaultConfig());
+            updateQRCodeNodeChecker.CheckUpdate(controller, !cfg.isDefaultConfig());
         }
 
         private void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -523,41 +523,14 @@ namespace Shadowsocks.View
                 I18N.GetString("Update subscribe SSR node failure"), ToolTipIcon.Info, 10000);
         }
 
-        void updateQRCodeNodeChecker_NewQrCodeNodeFound(byte[] sender, EventArgs e)
+        void updateQRCodeNodeChecker_NewQrCodeNodeFound(object sender, EventArgs e)
         {
-            byte[] imageBytes = sender;
-            if (imageBytes != null)
+            if ((sender as UpdateQRCodeNode).QRCodeNodeResult)
             {
-                //读入MemoryStream对象  
-                MemoryStream memoryStream = new MemoryStream(imageBytes, 0, imageBytes.Length);
-                memoryStream.Write(imageBytes, 0, imageBytes.Length);
-                //转成图片  
-                Image image = Image.FromStream(memoryStream);
-                Bitmap target = new Bitmap(image);
-                var source = new BitmapLuminanceSource(target);
-                var bitmap = new BinaryBitmap(new HybridBinarizer(source));
-                QRCodeReader reader = new QRCodeReader();
-                var result = reader.decode(bitmap);
-                if (result == null)
-                {
-                    ShowBalloonTip(I18N.GetString("Error"),
-                            I18N.GetString("Update subscribe SSR QRCode node failure"), ToolTipIcon.Info, 10000);
-                    return;
-                }
-                Configuration config = controller.GetCurrentConfiguration();
-                var success = controller.AddServerBySSURL(result.Text,config.nodeFeedQRCodeGroup,false,true);
-                if (success)
-                {
-                    ShowBalloonTip(I18N.GetString("Success"),
+                ShowBalloonTip(I18N.GetString("Success"),
                             I18N.GetString("Update subscribe SSR QRCode node success"), ToolTipIcon.Info, 10000);
-                }
-                else {
-                    ShowBalloonTip(I18N.GetString("Error"),
-                            I18N.GetString("Update subscribe SSR QRCode node failure"), ToolTipIcon.Info, 10000);
-                }
             }
             else {
-                Logging.Log(LogLevel.Error, "connect to update server error");
                 ShowBalloonTip(I18N.GetString("Error"),
                             I18N.GetString("Update subscribe SSR QRCode node failure"), ToolTipIcon.Info, 10000);
             }
@@ -1129,11 +1102,11 @@ namespace Shadowsocks.View
 
         private void CheckQRCodeNodeUpdate_Click(object sender, EventArgs e)
         {
-            updateQRCodeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), true);
+            updateQRCodeNodeChecker.CheckUpdate(controller, true);
         }
         private void CheckQRCodeNodeUpdateBypassProxy_Click(object sender, EventArgs e)
         {
-            updateQRCodeNodeChecker.CheckUpdate(controller.GetCurrentConfiguration(), false);
+            updateQRCodeNodeChecker.CheckUpdate(controller, false);
         }
 
         private void ShowLogItem_Click(object sender, EventArgs e)

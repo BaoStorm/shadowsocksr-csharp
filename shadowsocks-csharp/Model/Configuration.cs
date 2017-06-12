@@ -68,6 +68,20 @@ namespace Shadowsocks.Model
     }
 
     [Serializable]
+    public class QRCodeUrlInfo
+    {
+        public string url;
+        public QRCodeUrlState state;
+    }
+
+    public enum QRCodeUrlState
+    {
+        Empty,
+        Normal,
+        Exception
+    }
+
+    [Serializable]
     public class Configuration
     {
         public List<Server> configs;
@@ -110,7 +124,7 @@ namespace Shadowsocks.Model
         public string nodeFeedGroup;
         public bool nodeFeedAutoUpdate;
 
-        public List<string> nodeFeedQRCodeURLs;
+        public List<QRCodeUrlInfo> nodeFeedQRCodeURLs;
         public string nodeFeedQRCodeGroup;
         public bool nodeFeedQRCodeAutoUpdate;
 
@@ -128,7 +142,7 @@ namespace Shadowsocks.Model
         private static string OLD_DEFAULT_FEED_URL = "https://raw.githubusercontent.com/breakwa11/breakwa11.github.io/master/free/freenode.txt";
 
 
-        private static List<string> DEFAULT_FEED_QRCODE_URLS = new List<string>();
+        private static List<QRCodeUrlInfo> DEFAULT_FEED_QRCODE_URLS = new List<QRCodeUrlInfo>();
         private static string DEFAULT_QRCODE_GROUP = "QRCode-SSR";
         public static void SetPassword(string password)
         {

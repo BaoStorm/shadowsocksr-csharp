@@ -38,6 +38,10 @@ namespace Shadowsocks.View
             buttonDelete.Text = I18N.GetString("&Delete");
             buttonCancel.Text = I18N.GetString("Cancel");
             buttonOK.Text = I18N.GetString("OK");
+            foreach (ColumnHeader item in listViewUrls.Columns)
+            {
+                item.Text= I18N.GetString(item.Text);
+            }
         }
 
         private void SubscribeQRCodeForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -52,19 +56,17 @@ namespace Shadowsocks.View
             {
                 MessageBox.Show("请输入正确的URL");
             }
-            else if(listBoxUrls.Items.IndexOf(textBoxUrl.Text)==-1){
-                listBoxUrls.Items.Add(textBoxUrl.Text);
+            else if(listViewUrls.FindItemWithText(textBoxUrl.Text) == null)
+            {
+                listViewUrls.Items.Add(new ListViewItem(textBoxUrl.Text));
             }
         }
 
         private void buttonDelete_Click(object sender, System.EventArgs e)
         {
-            if (listBoxUrls.SelectedItem != null)
+            foreach (ListViewItem item in listViewUrls.SelectedItems)  
             {
-                MessageBox.Show("请输入选择列表项");
-            }
-            else if(listBoxUrls.Items.Count>0){
-                listBoxUrls.Items.Remove(listBoxUrls.SelectedItem);
+                listViewUrls.Items.RemoveAt(item.Index); 
             }
         }
 
@@ -81,8 +83,16 @@ namespace Shadowsocks.View
 
         private void LoadAllSettings()
         {
-            listBoxUrls.Items.Clear();
-            listBoxUrls.Items.AddRange(_modifiedConfiguration.nodeFeedQRCodeURLs.ToArray());
+            listViewUrls.BeginUpdate();
+            listViewUrls.Items.Clear();
+            foreach (var item in _modifiedConfiguration.nodeFeedQRCodeURLs)
+            {
+                ListViewItem listViewItem = new ListViewItem(item.url);
+                listViewItem.SubItems.Add(I18N.GetString(item.state.ToString()));
+                listViewItem.Tag = item.state;
+                listViewUrls.Items.Add(listViewItem);
+            }
+            listViewUrls.EndUpdate();
             textBoxGroup.Text = _modifiedConfiguration.nodeFeedQRCodeGroup;
             checkBoxAutoUpdate.Checked = _modifiedConfiguration.nodeFeedQRCodeAutoUpdate;
         }
@@ -90,9 +100,13 @@ namespace Shadowsocks.View
         private int SaveAllSettings()
         {
             _modifiedConfiguration.nodeFeedQRCodeURLs.Clear();
-            foreach (var url in listBoxUrls.Items)
+            foreach (ListViewItem item in listViewUrls.Items)
             {
-                _modifiedConfiguration.nodeFeedQRCodeURLs.Add(url.ToString());
+                QRCodeUrlInfo qrcodeUrlInfo = new QRCodeUrlInfo();
+                qrcodeUrlInfo.url = item.Text;
+                if(item.Tag!=null)
+                    qrcodeUrlInfo.state = (QRCodeUrlState)item.Tag;
+                _modifiedConfiguration.nodeFeedQRCodeURLs.Add(qrcodeUrlInfo);
             }
             _modifiedConfiguration.nodeFeedQRCodeGroup = textBoxGroup.Text;
             _modifiedConfiguration.nodeFeedQRCodeAutoUpdate = checkBoxAutoUpdate.Checked;
