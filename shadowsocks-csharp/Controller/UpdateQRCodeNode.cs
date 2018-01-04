@@ -31,10 +31,10 @@ namespace Shadowsocks.Controller
                     bool success = false;
                     byte[] qrCodeData = null;
                     qrCodeData = DownloadData(config, item.url, use_proxy);
-                    if (qrCodeData == null)
-                    {
-                        qrCodeData = DownloadData(config, item.url, !use_proxy);
-                    }
+                    //if (qrCodeData == null)
+                    //{
+                    //    qrCodeData = DownloadData(config, item.url, !use_proxy);
+                    //}
                     if (qrCodeData != null)
                     {
                         //读入MemoryStream对象  
