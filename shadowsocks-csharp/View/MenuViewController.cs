@@ -129,7 +129,7 @@ namespace Shadowsocks.View
                 }
             }
             Configuration cfg = controller.GetCurrentConfiguration();
-            updateQRCodeNodeChecker.CheckUpdate(controller, !cfg.isDefaultConfig());
+            updateQRCodeNodeChecker.CheckUpdate(controller, false);
         }
 
         private void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
